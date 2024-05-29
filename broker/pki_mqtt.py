@@ -42,13 +42,19 @@ def on_message(client, userdata, message):
     
     if nom == "VENDEUR":
         client.publish(TOPIC_VENDEUR, create_message_structure("Certificat signé"))
-    elif nom == "CLIENT":
+    elif nom == "CLIENT1":
+        topic_client1 = f"{TOPIC_CLIENT}/{1}"
         # Message client
-        if random.randint(0, 1) == 0:
-            client.publish(TOPIC_CLIENT, create_message_structure("Certificat Vendeur Non Valide"))
-        else:
-            client.publish(TOPIC_CLIENT, create_message_structure("Certificat Vendeur Valide"))
-
+        client.publish(topic_client1, create_message_structure("Certificat Vendeur Valide"))
+    elif nom == "CLIENT2":
+        topic_client2 = f"{TOPIC_CLIENT}/{2}"
+        # Message client
+        client.publish(topic_client2, create_message_structure("Certificat Vendeur Valide"))
+    elif nom == "CLIENT3":
+        topic_client3 = f"{TOPIC_CLIENT}/{3}"
+        # Message client
+        client.publish(topic_client3, create_message_structure("Certificat Vendeur Non Valide"))
+       
 
 # Création d'une instance du client MQTT
 client = mqtt.Client(protocol=mqtt.MQTTv311)  # Spécifier la version de l'API de rappel

@@ -20,6 +20,8 @@ TOPIC_PKI = "vehicle/sami/pki"
 TOPIC_VENDEUR = "vehicle/sami/vendeur"
 TOPIC_CLIENT = "vehicle/sami/client"
 
+TOPIC_MOUCHARD = "vehicle/sami/mouchard"
+
 NOM = "PKI"
 ID = 46
 
@@ -86,27 +88,10 @@ def on_publish(client, userdata, mid):
     print("["+NOM+"] : Message publié avec succès.")
 
 # Fonction de rappel lors de la réception d'un message
-def on_message(client, userdata, message):
-    encrypted_message = message.payload
-    # print(f"Message chiffré reçu: {encrypted_message}")
-    try:
-        decrypted_message = rsa_encryptor.decrypt_message(encrypted_message)
-        # print(f"Message déchiffré: {decrypted_message}")
-    except ValueError as e:
-        return
-    payload = json.loads(decrypted_message)
-
+def on_message(client, userdata, message): 
     payload = json.loads(message.payload.decode())
     print("Payload JSON:", payload)
 
-
-    # encrypted_message = message.payload
-    # rsa_encryptor.load_private_key("pki/pki_private_key.pem")
-    # decrypted_message = rsa_encryptor.decrypt_message(encrypted_message)
-    # # print("Message reçu sur le topic", message.topic, ":", decrypted_message)
-
-    # # payload = json.loads(decrypted_message.payload.decode())
-    # payload = json.loads(decrypted_message)
 
     nom = payload.get("nom", "")  # Utiliser NOM comme valeur par défaut si "nom" n'est pas présent
     received_message = payload.get("message", "")
@@ -128,6 +113,17 @@ def on_message(client, userdata, message):
             topic_vendeur2 = f"{TOPIC_VENDEUR}/{2}"
             rsa_encryptor.load_public_key(f"vendeur/vendeur_{id}_public_key.pem")
             client.publish(topic_vendeur2, create_message_structure("Certificat signé", certificat=cert_pem))
+        elif payload.get("nom") == "MOUCHARD1":
+
+            # Envoi du certificat au mouchard
+            topic_mouchard = f"{TOPIC_MOUCHARD}/{id}"
+            response = {
+                "nom": "PKI",
+                "id": "PKI",
+                "message": "Certificat délivré",
+                "certificat": cert_pem
+            }
+            client.publish(topic_mouchard, json.dumps(response))
     elif "Verification Certificat" in received_message and certificat:
         try:
             cert = x509.load_pem_x509_certificate(certificat.encode(), default_backend())
